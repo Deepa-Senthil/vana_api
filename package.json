@@ -18,6 +18,10 @@
     "multer": "^1.4.5-lts.1",
     "nodemon": "^3.0.3",
     "multer-s3": "^3.0.1",
-    "@aws-sdk/client-s3": "^3.367.0"
+    "@aws-sdk/client-s3": "^3.367.0",
+    "bcrypt": "^5.1.0",
+    "cookie-parser": "^1.4.6",
+    "crypto": "^1.0.1",
+    "jsonwebtoken": "^9.0.2"
   }
 }

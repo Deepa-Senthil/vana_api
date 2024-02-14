@@ -8,6 +8,9 @@ const JewelleryCollectionModel = require("../../database/models/JewelleryCollect
 const { mongoose } = require("mongoose");
 const { uploadToS3, deleteFromS3 } = require("../../config/s3Config");
 const path = require("path");
+// const uploadToS3 = async (buffer, originalname, mimetype) => {
+  
+// };
 
 /**
  * @param {Request} req - The Express request object
@@ -25,9 +28,18 @@ exports.createJewelleryItem = async (req, res, next) => {
       (file) => file.fieldname === "posterImage"
     );
 
-    const jewelleryCollectionIds = JSON.parse(formData.JewelleryCollection).map(
-      (id) => new mongoose.Types.ObjectId(id)
-    );
+   let jewelleryCollectionIds = [];
+   if (Array.isArray(formData.JewelleryCollection)) {
+     jewelleryCollectionIds = formData.JewelleryCollection.map(
+       (id) => new mongoose.Types.ObjectId(id)
+     );
+   } else {
+     // Handle the case where JewelleryCollection is not an array
+     console.error(
+       "JewelleryCollection is not an array:",
+       formData.JewelleryCollection
+     );
+   }
     const posterS3FileName = await uploadToS3(
       posterImage.buffer,
       posterImage.originalname,
@@ -52,7 +64,7 @@ exports.createJewelleryItem = async (req, res, next) => {
       price: formData.price,
       images: s3ImageUrls,
       description: formData.description,
-      netWeight: parseInt(formData.netWeight) ?? 0,
+      // netWeight: parseInt(formData.netWeight) ?? 0,
       posterURL: posterImageUrl,
       JewelleryCollection: jewelleryCollectionIds,
     });
@@ -112,16 +124,19 @@ exports.updateJewelleryItem = async (req, res, next) => {
     const JewelleryItemId = req.params.JewelleryItemId;
     const formData = req.body;
 
-    const jewelleryCollectionIds = JSON.parse(formData.JewelleryCollection).map(
-      (id) => new mongoose.Types.ObjectId(id)
-    );
+    // Check if formData.JewelleryCollection is defined before parsing it
+    const jewelleryCollectionIds = formData.JewelleryCollection
+      ? JSON.parse(formData.JewelleryCollection).map(
+          (id) => new mongoose.Types.ObjectId(id)
+        )
+      : [];
 
-    const images = req.files.filter((file) =>
-      file.fieldname.startsWith("image")
-    );
-    const posterImage = req.files.find(
-      (file) => file.fieldname === "posterImage"
-    );
+    const images = req.files
+      ? req.files.filter((file) => file.fieldname.startsWith("image"))
+      : [];
+    const posterImage = req.files
+      ? req.files.find((file) => file.fieldname === "posterImage")
+      : null;
 
     if (!JewelleryItemId) {
       const error = new Error("JewelleryItemId is required");
@@ -137,8 +152,8 @@ exports.updateJewelleryItem = async (req, res, next) => {
 
     var item = await JewelleryItems.findById(JewelleryItemId);
 
-    if (!item._id) {
-      const error = new Error("item is not found");
+    if (!item || !item._id) {
+      const error = new Error("Item is not found");
       error.statusCode = 459;
       throw error;
     }
@@ -186,7 +201,7 @@ exports.updateJewelleryItem = async (req, res, next) => {
       title: formData.title,
       description: formData.description,
       images: updatedImages,
-      netWeight: parseInt(formData.netWeight) ?? 0,
+      netWeight: parseInt(formData.netWeight) || 0,
       price: formData.price,
       posterURL: posterImageUrl,
       JewelleryCollection: jewelleryCollectionIds,
@@ -207,6 +222,7 @@ exports.updateJewelleryItem = async (req, res, next) => {
     next(error);
   }
 };
+
 
 const deleteImageFromS3 = async (url) => {
   try {

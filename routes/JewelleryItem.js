@@ -6,6 +6,7 @@ const upload = multer();
 
 const JewelleryItemControlleradmin = require("../controllers/admin/JewelleryItemController");
 const JewelleryItemControllerUser = require("../controllers/user/JewelleryItem");
+const BagControllerUser = require ('../controllers/user/BagController')
 
 const use = (fn) => (req, res, next) =>
   Promise.resolve(fn(req, res, next)).catch(next);
@@ -45,5 +46,8 @@ router.get(
   "/searchJewelleryCollectionItem",
   use(JewelleryItemControllerUser.searchJewelleryCollectionItem)
 );
+
+router.get('/mybag/:JewelleryItemId',BagControllerUser.getMyBag );
+
 
 module.exports = router;

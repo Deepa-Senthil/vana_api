@@ -11,7 +11,7 @@ const JewelleryItemSchema = new mongoose.Schema({
     ],
     price: Number,
     description: String,
-    netWeight: Number,
+    // netWeight: Number,
     posterURL: String,
     JewelleryCollection: [{ type: mongoose.Schema.Types.ObjectId, ref: JewelleryCollectionModel }],
 });

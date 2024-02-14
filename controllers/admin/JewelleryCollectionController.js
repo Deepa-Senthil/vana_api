@@ -54,11 +54,11 @@ const { deleteFromS3, uploadToS3 } = require("../../config/s3Config");
 exports.createJewelleryCollection = async (req, res, next) => {
   try {
     const formData = req.body;
-
+console.log("formData");
     var collectionImageS3Location = req.file;
 
     if (!collectionImageS3Location) {
-      throw new Error("menu image is required");
+      throw new Error(" image is required");
     }
 
     var newJewelleryCollectionDoc = await JewelleryCollection.create({
@@ -187,6 +187,7 @@ const deleteImageFromS3 = async (key) => {
 exports.getJewelleryCollection = async (req, res, next) => {
   try {
     const collections = await JewelleryCollection.find();
+    console.log("collections");
     res.json(collections);
   } catch (error) {
     error = new Error("Error get All collections");

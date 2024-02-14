@@ -4,7 +4,7 @@ const JewelleryCollectionSchema = new mongoose.Schema({
     name: String,
     image: {
         type: String,
-        required: false
+        required: true,
     },
     description: {
         type: String,
