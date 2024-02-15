@@ -9,7 +9,7 @@ const { mongoose } = require("mongoose");
 const { uploadToS3, deleteFromS3 } = require("../../config/s3Config");
 const path = require("path");
 // const uploadToS3 = async (buffer, originalname, mimetype) => {
-  
+
 // };
 
 /**
@@ -21,51 +21,52 @@ exports.createJewelleryItem = async (req, res, next) => {
   try {
     const formData = req.body;
 
-    const images = req.files.filter((file) =>
-      file.fieldname.startsWith("image")
-    );
-    const posterImage = req.files.find(
-      (file) => file.fieldname === "posterImage"
-    );
+    // const images = req.files.filter((file) =>
+    //   file.fieldname.startsWith("image")
+    // );
+    // const posterImage = req.files.find(
+    //   (file) => file.fieldname === "posterImage"
+    // );
 
-   let jewelleryCollectionIds = [];
-   if (Array.isArray(formData.JewelleryCollection)) {
-     jewelleryCollectionIds = formData.JewelleryCollection.map(
-       (id) => new mongoose.Types.ObjectId(id)
-     );
-   } else {
-     // Handle the case where JewelleryCollection is not an array
-     console.error(
-       "JewelleryCollection is not an array:",
-       formData.JewelleryCollection
-     );
-   }
-    const posterS3FileName = await uploadToS3(
-      posterImage.buffer,
-      posterImage.originalname,
-      posterImage.mimetype
-    );
-    const posterImageUrl = `${process.env.BUCKET_URL}${posterS3FileName}`;
+    let jewelleryCollectionIds = [];
+    if (Array.isArray(formData.JewelleryCollection)) {
+      jewelleryCollectionIds = formData.JewelleryCollection.map(
+        (id) => new mongoose.Types.ObjectId(id)
+      );
+    } else {
+      // Handle the case where JewelleryCollection is not an array
+      console.error(
+        "JewelleryCollection is not an array:",
+        formData.JewelleryCollection
+      );
+    }
+    // const posterS3FileName = await uploadToS3(
+    //   posterImage.buffer,
+    //   posterImage.originalname,
+    //   posterImage.mimetype
+    // );
+    // const posterImageUrl = `${process.env.BUCKET_URL}${posterS3FileName}`;
 
-    const s3ImageUrls = await Promise.all(
-      images.map(async (image) => {
-        const s3FileName = await uploadToS3(
-          image.buffer,
-          image.originalname,
-          image.mimetype
-        );
-        const url = `${process.env.BUCKET_URL}${s3FileName}`;
-        return url;
-      })
-    );
+    // const s3ImageUrls = await Promise.all(
+    //   images.map(async (image) => {
+    //     const s3FileName = await uploadToS3(
+    //       image.buffer,
+    //       image.originalname,
+    //       image.mimetype
+    //     );
+    //     const url = `${process.env.BUCKET_URL}${s3FileName}`;
+    //     return url;
+    //   })
+    // );
 
     var newItemDoc = await JewelleryItems.create({
       title: formData.title,
       price: formData.price,
-      images: s3ImageUrls,
+      inStock: formData.inStock,
+      // images: s3ImageUrls,
       description: formData.description,
       // netWeight: parseInt(formData.netWeight) ?? 0,
-      posterURL: posterImageUrl,
+      // posterURL: posterImageUrl,
       JewelleryCollection: jewelleryCollectionIds,
     });
 
@@ -98,11 +99,11 @@ exports.getAllJewelleryItems = async (req, res, next) => {
     {
       $project: {
         title: 1,
-        images: 1,
+        // images: 1,
         price: 1,
-        description: 1,
-        netWeight: 1,
-        posterURL: 1,
+        // description: 1,
+        // netWeight: 1,
+        // posterURL: 1,
         JewelleryCollection: {
           _id: 1,
           name: 1,
@@ -200,10 +201,11 @@ exports.updateJewelleryItem = async (req, res, next) => {
       _id: formData.id,
       title: formData.title,
       description: formData.description,
-      images: updatedImages,
-      netWeight: parseInt(formData.netWeight) || 0,
+      // images: updatedImages,
+      // netWeight: parseInt(formData.netWeight) || 0,
       price: formData.price,
-      posterURL: posterImageUrl,
+      inStock: formData.inStock,
+      // posterURL: posterImageUrl,
       JewelleryCollection: jewelleryCollectionIds,
     };
 
@@ -222,7 +224,6 @@ exports.updateJewelleryItem = async (req, res, next) => {
     next(error);
   }
 };
-
 
 const deleteImageFromS3 = async (url) => {
   try {
@@ -330,7 +331,8 @@ exports.fetchJewelleryItemByJewelleryCollectionId = async (req, res, next) => {
           title: "$AllJewelleryitems.title",
           description: "$AllJewelleryitems.description",
           price: "$AllJewelleryitems.price",
-          netWeight: "$AllJewelleryitems.netWeight",
+          inStock: "$AllJewelleryitems.inStock",
+          // netWeight: "$AllJewelleryitems.netWeight",
           posterURL: "$AllJewelleryitems.posterURL",
           categoryName: "$name",
           JewelleryCollectionId: "$_id",
